@@ -1,33 +1,55 @@
 import debounce from 'lodash.debounce';
-import Notiflix from "notiflix";
-// import templateFunction from './template.hbs';
-
-const DEBOUNCE_DELAY = 300;
+import { Notify } from "notiflix";
+import severalCards from './templates/severalCards.hbs';
+import oneCard from './templates/oneCard.hbs';
 import { fetchCountries } from "./js/fetchCountries";
 import "./css/styles.css";
+const DEBOUNCE_DELAY = 300;
 
-// function fetchCountries(name) {
-// // const name = "sweden";
-//     const BASE_URL ='https://restcountries.eu';
-//     fetch(`${BASE_URL}/rest/v2/name/${name}`).then(response => { return response.json() }).then(country => { console.log(country) }).catch(error => { console.log(error)});
-// }
-// fetchCountries('sweden');
 const input = document.querySelector('[id="search-box"]');
-console.log(input);
 const countryList = document.querySelector(".country-list");
-console.log(countryList);
 
 input.addEventListener('input', debounce(onInput, DEBOUNCE_DELAY));
 
- export function onInput(evt) {
-    console.log(evt.target.value)
-    const name = evt.target.value;
-    fetchCountries(name);
-    countryList.textContent = name;
+function onInput(evt) {
+const name = evt.target.value;
+fetchCountries(name).then(data => {
+    
+if (data.length > 10 ) {
+  Notify.info("Too many matches found. Please enter a more specific name.");
+  }
 
+if (data.length === 1) {
+  renderOneCard(data[0]);
+  
+  }
 
+if (data.length >= 2 && data.length <= 10) {
+  renderSeveralCards({ data });
+}
+  if (input.value === '') {
+   countryList.innerHTML = '';
+  }
+  })
+  .catch(error => {
+  Notify.failure("Oops, there is no country with that name");
+  console.log('Error:', error)
+  countryList.innerHTML = '';
+  });
+
+}
+
+function renderOneCard(data) {
+ const lang =data.languages.map(l => l.name).join(', ');
+ const markup = oneCard({ data, lang });
+ countryList.innerHTML = markup;
 
 }
 
 
-// console.log(name);
+function renderSeveralCards(data) {
+const markup = severalCards(data);
+countryList.innerHTML = markup;
+
+}
+
