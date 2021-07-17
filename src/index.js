@@ -14,7 +14,7 @@ input.addEventListener('input', debounce(onInput, DEBOUNCE_DELAY));
 function onInput(evt) {
   const name = evt.target.value;
 
-  if (name === "") {
+  if (name.trim() === "" ) {
     countryList.innerHTML = '';
     return;
   }
